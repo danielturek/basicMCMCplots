@@ -1,0 +1,9 @@
+
+
+export(chainsPlot)
+export(samplesPlot)
+
+importFrom("grDevices", "dev.new", "dev.off", "pdf", "rainbow")
+importFrom("graphics", "axis", "lines", "par", "plot", "points", "polygon", "segments", "text")
+importFrom("stats", "density", "quantile")
+

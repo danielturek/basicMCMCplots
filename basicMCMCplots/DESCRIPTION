@@ -1,4 +1,4 @@
-Package: plotMCMC
+Package: basicMCMCplots
 Title: Trace Plots, Density Plots and Chain Comparisons for MCMC Samples
 Version: 0.1.0
 Authors@R: person("Daniel", "Turek", email = "danielturek@gmail.com", role = c("aut", "cre"))

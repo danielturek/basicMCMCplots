@@ -14,11 +14,9 @@
 #' @param file Optional filename to save figure as a file
 #'
 #' @examples
-#' \dontrun{
 #' samples <- cbind(rnorm(1000), rgamma(1000, 1))
 #' colnames(samples) <- c('alpha', 'beta')
 #' samplesPlot(samples)
-#' }
 #' 
 #' @export
 samplesPlot <- function(samples, var=colnames(samples), ind=NULL, burnin=NULL, width=7, height=4, legend=TRUE, legend.location='topright', traceplot=TRUE, densityplot=TRUE, file=NULL) {
@@ -80,14 +78,12 @@ samplesPlot <- function(samples, var=colnames(samples), ind=NULL, burnin=NULL, w
 #' @param file Filename for saving figure to a file
 #'
 #' @examples
-#' \dontrun{
 #' samples1 <- cbind(rnorm(1000, 1), rgamma(1000, 1), rpois(1000, 1))
 #' colnames(samples1) <- c('alpha', 'beta', 'gamma')
 #' samples2 <- cbind(rnorm(1000, 2), rgamma(1000, 2), rpois(1000, 2))
 #' colnames(samples2) <- c('alpha', 'beta', 'gamma')
 #' samplesList <- list(chain1 = samples1, chain2 = samples2)
 #' chainsPlot(samplesList, nrow = 1, jitter = .3, buffer.left = .5, buffer.right = .5)
-#' }
 #'
 #' @export
 chainsPlot <- function(samplesList, var=NULL, nrows=3, width=7, height=min(1+3*nrows,7), legend=!is.null(names(samplesList)), legend.location='topright', jitter=1, buffer.right=0, buffer.left=0, cex=1, file=NULL) {

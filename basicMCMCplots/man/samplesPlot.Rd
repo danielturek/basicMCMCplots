@@ -36,10 +36,8 @@ samplesPlot(samples, var = colnames(samples), ind = NULL,
 Plot MCMC traceplots and density plots
 }
 \examples{
-\dontrun{
 samples <- cbind(rnorm(1000), rgamma(1000, 1))
 colnames(samples) <- c('alpha', 'beta')
 samplesPlot(samples)
-}
 
 }

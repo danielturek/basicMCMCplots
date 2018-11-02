@@ -1,10 +1,25 @@
 
+####### This, essentially, should be added as a new function: chainsPlot2, or
+####### change chainsPlot -> chainsSummary(), and make this below be chainsPlot()
+####### 
+#######par(mfrow = c(7,3), mai = c(0.3,0.3,0.2,0.2))
+####### 
+#######for(i in 1:21){
+#######        
+#######        plot(mcmcComb[[1]]$samples[1,i,], type = 'l', main = dimnames(mcmcComb[[1]]$samples)[[2]][i], ylim = c(min(mcmcComb[[1]]$samples[1:3,i,]), max(mcmcComb[[1]]$samples[1:3,i,])), xlab ='', ylab ='')
+#######        lines(mcmcComb[[1]]$samples[2,i,], col = 'red', lty = 2)
+#######        lines(mcmcComb[[1]]$samples[3,i,], col = 'green', lty = 3)
+#######}
+####### 
+
+
 #' Plot MCMC traceplots and density plots
 #'
 #' @param samples Array of MCMC samples
 #' @param var Parameter names to plot
 #' @param ind Chain indices to plot
 #' @param burnin Nunber of initial MCMC samples to discard
+#' @param scale Logical, whether to normalize each posterior chain
 #' @param width Width of the plot
 #' @param height Height of the plot
 #' @param legend Logical, whether to include a legend of parameter names
@@ -19,7 +34,7 @@
 #' samplesPlot(samples)
 #' 
 #' @export
-samplesPlot <- function(samples, var=colnames(samples), ind=NULL, burnin=NULL, width=7, height=4, legend=TRUE, legend.location='topright', traceplot=TRUE, densityplot=TRUE, file=NULL) {
+samplesPlot <- function(samples, var=colnames(samples), ind=NULL, burnin=NULL, scale=FALSE, width=7, height=4, legend=TRUE, legend.location='topright', traceplot=TRUE, densityplot=TRUE, file=NULL) {
     if(!is.null(file)) pdf(file, width=width, height=height) else
     ## orig: if(inherits(try(knitr::opts_chunk$get('dev'), silent=TRUE), 'try-error') || is.null(knitr::opts_chunk$get('dev')))   ## if called from Rmarkdown/knitr
     if(inherits(try(eval(parse(text='knitr::opts_chunk$get(\'dev\')')[[1]]), silent=TRUE), 'try-error') || is.null(eval(parse(text='knitr::opts_chunk$get(\'dev\')')[[1]])))
@@ -30,6 +45,8 @@ samplesPlot <- function(samples, var=colnames(samples), ind=NULL, burnin=NULL, w
     var <- gsub('\\[', '\\\\\\[', gsub('\\]', '\\\\\\]', var))   ## add \\ before any '[' or ']' appearing in var
     var <- unlist(lapply(var, function(n) grep(paste0('^', n,'(\\[.+\\])?$'), colnames(samples), value=TRUE)))  ## expanded any indexing
     samples <- samples[, var, drop=FALSE]
+    if(dim(samples)[2] == 0) stop('variable names misspelled', call. = FALSE)
+    if(scale) samples <- apply(samples, 2, scale)
     if(!is.null(ind) && !is.null(burnin)) stop('only specify either ind or burnin')
     if(!is.null(ind))     samples <- samples[ind, , drop=FALSE]
     if(!is.null(burnin))  samples <- samples[(burnin+1):dim(samples)[1], , drop=FALSE]
@@ -67,6 +84,7 @@ samplesPlot <- function(samples, var=colnames(samples), ind=NULL, burnin=NULL, w
 #' @param samplesList List of arrays of MCMC samples from different chains
 #' @param var Parameter names to plot
 #' @param nrows Number of rows in the resulting plot
+#' @param scale Logical, whether to normalize each posterior chain
 #' @param width Width of figure
 #' @param height Height of figure
 #' @param legend Logical, whether to include a legend of chain names
@@ -86,24 +104,31 @@ samplesPlot <- function(samples, var=colnames(samples), ind=NULL, burnin=NULL, w
 #' chainsPlot(samplesList, nrow = 1, jitter = .3, buffer.left = .5, buffer.right = .5)
 #'
 #' @export
-chainsPlot <- function(samplesList, var=NULL, nrows=3, width=7, height=min(1+3*nrows,7), legend=!is.null(names(samplesList)), legend.location='topright', jitter=1, buffer.right=0, buffer.left=0, cex=1, file=NULL) {
+chainsPlot <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=7, height=NULL, legend=!is.null(names(samplesList)), legend.location='topright', jitter=1, buffer.right=0, buffer.left=0, cex=1, file=NULL) {
+    if(!(class(samplesList) %in% c('list', 'mcmc.list'))) samplesList <- list(samplesList)
+    if(!is.null(var)) samplesList <- lapply(samplesList, function(samples) {
+        var <- gsub('\\[', '\\\\\\[', gsub('\\]', '\\\\\\]', var))   ## add \\ before any '[' or ']' appearing in var
+        theseVar <- unlist(lapply(var, function(n) grep(paste0('^', n,'(\\[.+\\])?$'), colnames(samples), value=TRUE)))  ## expanded any indexing
+        ret <- samples[, theseVar, drop=FALSE]
+        if(dim(ret)[2] == 0) stop('variable names misspelled', call. = FALSE)
+        ret
+    })
+    chainParamNamesList <- lapply(samplesList, function(s) colnames(s))
+    nChains <- length(samplesList)
+    cols <- rainbow(nChains)
+    paramNamesAll <- unique(unlist(lapply(samplesList, function(s) colnames(s))))
+    nParamsAll <- length(paramNamesAll)
+    if(is.null(nrows)) nrows <- min(ceiling(nParamsAll/7), 3)
+    if(is.null(height)) height <- if(nrows==1) 3 else if(nrows==2) 4 else 7
+    ## this section moved lower, after we know nrows:
     if(!is.null(file)) pdf(file, width=width, height=height) else
     ## orig: if(inherits(try(knitr::opts_chunk$get('dev'), silent=TRUE), 'try-error') || is.null(knitr::opts_chunk$get('dev')))   ## if called from Rmarkdown/knitr
     if(inherits(try(eval(parse(text='knitr::opts_chunk$get(\'dev\')')[[1]]), silent=TRUE), 'try-error') || is.null(eval(parse(text='knitr::opts_chunk$get(\'dev\')')[[1]])))
         dev.new(height=height, width=width)
     par.save <- par(no.readonly = TRUE)
-    par(mfrow=c(nrows,1), oma=c(3,1,1,1), mar=c(4,1,0,1), mgp=c(3,0.5,0))
-    if(!(class(samplesList) %in% c('list', 'mcmc.list'))) samplesList <- list(samplesList)
-    if(!is.null(var)) samplesList <- lapply(samplesList, function(samples) {
-        var <- gsub('\\[', '\\\\\\[', gsub('\\]', '\\\\\\]', var))   ## add \\ before any '[' or ']' appearing in var
-        theseVar <- unlist(lapply(var, function(n) grep(paste0('^', n,'(\\[.+\\])?$'), colnames(samples), value=TRUE)))  ## expanded any indexing
-        samples[, theseVar, drop=FALSE]
-    })
-    chainParamNamesList <- lapply(samplesList, function(s) colnames(s))
-    nChains <- length(samplesList)
-    paramNamesAll <- unique(unlist(lapply(samplesList, function(s) colnames(s))))
-    nParamsAll <- length(paramNamesAll)
-    cols <- rainbow(nChains)
+    ##par(mfrow=c(nrows,1), oma=c(3,1,1,1), mar=c(4,1,0,1), mgp=c(3,0.5,0))
+    mar1 <- if(nrows<=2) 2 else 4
+    par(mfrow=c(nrows,1), oma=c(3,1,1,1), mar=c(mar1,1,0,1), mgp=c(3,0.5,0))
     ## construct 3D summary array:
     summary <- array(as.numeric(NA), dim = c(nChains, 3, nParamsAll))
     if(!is.null(names(samplesList))) dimnames(summary)[[1]] <- names(samplesList)
@@ -111,6 +136,7 @@ chainsPlot <- function(samplesList, var=NULL, nrows=3, width=7, height=min(1+3*n
     dimnames(summary)[[3]] <- paramNamesAll
     for(iChain in 1:nChains) {
         theseSamples <- samplesList[[iChain]]
+        if(scale) theseSamples <- apply(theseSamples, 2, scale)
         thisSummary <- rbind(mean = apply(theseSamples, 2, mean),
                              low  = apply(theseSamples, 2, function(x) quantile(x, 0.025)),
                              upp  = apply(theseSamples, 2, function(x) quantile(x, 0.975)))

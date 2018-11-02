@@ -5,9 +5,9 @@
 \title{Plot MCMC traceplots and density plots}
 \usage{
 samplesPlot(samples, var = colnames(samples), ind = NULL,
-  burnin = NULL, width = 7, height = 4, legend = TRUE,
-  legend.location = "topright", traceplot = TRUE, densityplot = TRUE,
-  file = NULL)
+  burnin = NULL, scale = FALSE, width = 7, height = 4,
+  legend = TRUE, legend.location = "topright", traceplot = TRUE,
+  densityplot = TRUE, file = NULL)
 }
 \arguments{
 \item{samples}{Array of MCMC samples}
@@ -17,6 +17,8 @@ samplesPlot(samples, var = colnames(samples), ind = NULL,
 \item{ind}{Chain indices to plot}
 
 \item{burnin}{Nunber of initial MCMC samples to discard}
+
+\item{scale}{Logical, whether to normalize each posterior chain}
 
 \item{width}{Width of the plot}
 

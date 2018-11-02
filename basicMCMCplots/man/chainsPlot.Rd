@@ -4,11 +4,10 @@
 \alias{chainsPlot}
 \title{Compare summary statistics from multiple MCMC chains}
 \usage{
-chainsPlot(samplesList, var = NULL, nrows = 3, width = 7,
-  height = min(1 + 3 * nrows, 7),
-  legend = !is.null(names(samplesList)), legend.location = "topright",
-  jitter = 1, buffer.right = 0, buffer.left = 0, cex = 1,
-  file = NULL)
+chainsPlot(samplesList, var = NULL, nrows = NULL, scale = FALSE,
+  width = 7, height = NULL, legend = !is.null(names(samplesList)),
+  legend.location = "topright", jitter = 1, buffer.right = 0,
+  buffer.left = 0, cex = 1, file = NULL)
 }
 \arguments{
 \item{samplesList}{List of arrays of MCMC samples from different chains}
@@ -16,6 +15,8 @@ chainsPlot(samplesList, var = NULL, nrows = 3, width = 7,
 \item{var}{Parameter names to plot}
 
 \item{nrows}{Number of rows in the resulting plot}
+
+\item{scale}{Logical, whether to normalize each posterior chain}
 
 \item{width}{Width of figure}
 

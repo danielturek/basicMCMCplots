@@ -15,7 +15,7 @@
 
 #' Plot MCMC traceplots and density plots
 #'
-#' @param samples Array of MCMC samples
+#' @param samples Array of MCMC samples, or a list of samples from multiple chains in which case the first chain is used
 #' @param var Parameter names to plot
 #' @param ind Chain indices to plot
 #' @param burnin Nunber of initial MCMC samples to discard
@@ -42,6 +42,7 @@ samplesPlot <- function(samples, var=colnames(samples), ind=NULL, burnin=NULL, s
     par.save <- par(no.readonly = TRUE)
     par(mfrow=c(1,traceplot+densityplot), cex=0.7, cex.main=1.5, cex.axis=0.9, lab=c(3,3,7), mgp=c(0,0.4,0), mar=c(1.6,1.6,2,0.6), oma=c(0,0,0,0), tcl=-0.3, bty='l')
     ## process samples
+    if(is.list(samples)) samples <- samples[[1]]    ## if samplesList was provided, then take first chain
     var <- gsub('\\[', '\\\\\\[', gsub('\\]', '\\\\\\]', var))   ## add \\ before any '[' or ']' appearing in var
     var <- unlist(lapply(var, function(n) grep(paste0('^', n,'(\\[.+\\])?$'), colnames(samples), value=TRUE)))  ## expanded any indexing
     samples <- samples[, var, drop=FALSE]

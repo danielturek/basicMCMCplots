@@ -1,18 +1,4 @@
 
-####### This, essentially, should be added as a new function: chainsPlot2, or
-####### change chainsPlot -> chainsSummary(), and make this below be chainsPlot()
-####### 
-#######par(mfrow = c(7,3), mai = c(0.3,0.3,0.2,0.2))
-####### 
-#######for(i in 1:21){
-#######        
-#######        plot(mcmcComb[[1]]$samples[1,i,], type = 'l', main = dimnames(mcmcComb[[1]]$samples)[[2]][i], ylim = c(min(mcmcComb[[1]]$samples[1:3,i,]), max(mcmcComb[[1]]$samples[1:3,i,])), xlab ='', ylab ='')
-#######        lines(mcmcComb[[1]]$samples[2,i,], col = 'red', lty = 2)
-#######        lines(mcmcComb[[1]]$samples[3,i,], col = 'green', lty = 3)
-#######}
-####### 
-
-
 #' Plot MCMC traceplots and density plots
 #'
 #' @param samples Array of MCMC samples, or a list of samples from multiple chains in which case the first chain is used
@@ -72,15 +58,15 @@ samplesPlot <- function(samples, var=colnames(samples), ind=NULL, burnin=NULL, s
         if(legend & !is.null(dimnames(samples)) & is.character(dimnames(samples)[[2]]))
             legend(legend=dimnames(samples)[[2]], fill=rainbow(nparam, alpha=0.5), bty='n', x=legend.location)
     }  ## finish densityplot
-    if(!is.null(file)) dev.off()
     invisible(par(par.save))
+    if(!is.null(file)) dev.off()
 }
  
 
 
 #' Compare summary statistics from multiple MCMC chains
 #'
-#' Parameter plots from each chain show median and 95% credible intervals
+#' Plots median and 95% credible intervals for each paramter and chain.
 #'
 #' @param samplesList List of arrays of MCMC samples from different chains
 #' @param var Parameter names to plot
@@ -102,10 +88,10 @@ samplesPlot <- function(samples, var=colnames(samples), ind=NULL, burnin=NULL, s
 #' samples2 <- cbind(rnorm(1000, 2), rgamma(1000, 2), rpois(1000, 2))
 #' colnames(samples2) <- c('alpha', 'beta', 'gamma')
 #' samplesList <- list(chain1 = samples1, chain2 = samples2)
-#' chainsPlot(samplesList, nrow = 1, jitter = .3, buffer.left = .5, buffer.right = .5)
+#' chainsSummary(samplesList, nrow = 1, jitter = .3, buffer.left = .5, buffer.right = .5)
 #'
 #' @export
-chainsPlot <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=7, height=NULL, legend=!is.null(names(samplesList)), legend.location='topright', jitter=1, buffer.right=0, buffer.left=0, cex=1, file=NULL) {
+chainsSummary <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=7, height=NULL, legend=!is.null(names(samplesList)), legend.location='topright', jitter=1, buffer.right=0, buffer.left=0, cex=1, file=NULL) {
     if(!(class(samplesList) %in% c('list', 'mcmc.list'))) samplesList <- list(samplesList)
     if(!is.null(var)) samplesList <- lapply(samplesList, function(samples) {
         var <- gsub('\\[', '\\\\\\[', gsub('\\]', '\\\\\\]', var))   ## add \\ before any '[' or ']' appearing in var
@@ -164,9 +150,82 @@ chainsPlot <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=7, 
         }
         if(legend) legend(legend.location, legend=names(samplesList), pch=16, col=cols, cex=cex)
     }
-    if(!is.null(file)) dev.off()
     invisible(par(par.save))
+    if(!is.null(file)) dev.off()
 }
+
+
+
+
+
+#' Compare trace plots from multiple MCMC chains
+#'
+#' Overlays trace plots from each MCMC chain, for each parameter
+#'
+#' @param samplesList List of arrays of MCMC samples from different chains
+#' @param var Parameter names to plot
+#' @param scale Logical, whether to normalize each posterior chain
+#' @param legend Logical, whether to include a legend of chain names
+#' @param legend.location Legend location
+#' @param cex Expansion coefficient for text
+#' @param file Filename for saving figure to a file
+#'
+#' @examples
+#' samples1 <- cbind(rnorm(1000, 1), rgamma(1000, 1), rpois(1000, 1))
+#' colnames(samples1) <- c('alpha', 'beta', 'gamma')
+#' samples2 <- cbind(rnorm(1000, 2), rgamma(1000, 2), rpois(1000, 2))
+#' colnames(samples2) <- c('alpha', 'beta', 'gamma')
+#' samplesList <- list(chain1 = samples1, chain2 = samples2)
+#' chainsPlot(samplesList, nrow = 1, jitter = .3, buffer.left = .5, buffer.right = .5)
+#'
+#' @export
+chainsPlot <- function(samplesList, var=NULL, scale=FALSE, legend=!is.null(names(samplesList)), legend.location='topright', cex=1, file=NULL) {
+    if(!(class(samplesList) %in% c('list', 'mcmc.list'))) samplesList <- list(samplesList)
+    if(!is.null(var)) samplesList <- lapply(samplesList, function(samples) {
+        var <- gsub('\\[', '\\\\\\[', gsub('\\]', '\\\\\\]', var))   ## add \\ before any '[' or ']' appearing in var
+        theseVar <- unlist(lapply(var, function(n) grep(paste0('^', n,'(\\[.+\\])?$'), colnames(samples), value=TRUE)))  ## expanded any indexing
+        ret <- samples[, theseVar, drop=FALSE]
+        if(dim(ret)[2] == 0) stop('variable names misspelled', call. = FALSE)
+        ret
+    })
+    chainParamNamesList <- lapply(samplesList, function(s) colnames(s))
+    nChains <- length(samplesList)
+    cols <- rainbow(nChains)
+    paramNamesAll <- unique(unlist(lapply(samplesList, function(s) colnames(s))))
+    nParamsAll <- length(paramNamesAll)
+    nrows <- ceiling(nParamsAll / 3)
+    ncols <- min(nParamsAll, 3)
+    height <- if(nrows==1) 3 else if(nrows==2) 4 else if(nrows==3) 5 else if(nrows==4) 6 else 7
+    width <- 7
+    if(!is.null(file)) pdf(file, width=width, height=height) else
+    ## orig: if(inherits(try(knitr::opts_chunk$get('dev'), silent=TRUE), 'try-error') || is.null(knitr::opts_chunk$get('dev')))   ## if called from Rmarkdown/knitr
+    if(inherits(try(eval(parse(text='knitr::opts_chunk$get(\'dev\')')[[1]]), silent=TRUE), 'try-error') || is.null(eval(parse(text='knitr::opts_chunk$get(\'dev\')')[[1]])))
+        dev.new(width=width, height=height)
+    par.save <- par(no.readonly = TRUE)
+    oma1 <- if(nrows==5) 2.5 else if(nrows==6) 2.5 else nrows/3
+    par(mfrow=c(nrows,ncols), mai=c(0.1,0.2,0.2,0.2), oma=c(oma1,.3,0,0), mgp=c(2,0.3,0))##, mar=c(mar1,1,0,1), oma=c(1,.1,.1,.1), mgp=c(3,0.5,0)   want these ???
+    for(iParam in 1:nParamsAll) {
+        thisParamName <- paramNamesAll[iParam]
+        ylim <- range(unlist(lapply(samplesList, function(s) if(thisParamName %in% colnames(s)) s[,thisParamName] else NULL)))
+        createdNewPlot <- FALSE
+        for(iChain in 1:nChains) {
+            if(!(thisParamName %in% colnames(samplesList[[iChain]]))) next
+            if(!createdNewPlot) {
+                ys <- samplesList[[iChain]][,thisParamName]
+                plot(seq_along(ys), ys, type='l', col=cols[iChain], ylim=ylim, xlab='', ylab='', main=thisParamName, cex.main=cex, cex.axis=0.8*cex, tcl=-0.2, xaxt='n')
+                if(iParam == 1) if(legend) legend(legend.location, legend=names(samplesList), lty=1, col=cols, cex=cex)
+                createdNewPlot <- TRUE
+            } else {
+                ys <- samplesList[[iChain]][,thisParamName]
+                lines(seq_along(ys), ys, col=cols[iChain])
+            }
+        }
+    }
+    invisible(par(par.save))
+    if(!is.null(file)) dev.off()
+}
+
+
 
 
 

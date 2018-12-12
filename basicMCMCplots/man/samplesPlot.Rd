@@ -10,7 +10,7 @@ samplesPlot(samples, var = colnames(samples), ind = NULL,
   densityplot = TRUE, file = NULL)
 }
 \arguments{
-\item{samples}{Array of MCMC samples}
+\item{samples}{Array of MCMC samples, or a list of samples from multiple chains in which case the first chain is used}
 
 \item{var}{Parameter names to plot}
 

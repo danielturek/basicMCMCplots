@@ -2,42 +2,31 @@
 % Please edit documentation in R/plots.R
 \name{chainsPlot}
 \alias{chainsPlot}
-\title{Compare summary statistics from multiple MCMC chains}
+\title{Compare trace plots from multiple MCMC chains}
 \usage{
-chainsPlot(samplesList, var = NULL, nrows = NULL, scale = FALSE,
-  width = 7, height = NULL, legend = !is.null(names(samplesList)),
-  legend.location = "topright", jitter = 1, buffer.right = 0,
-  buffer.left = 0, cex = 1, file = NULL)
+chainsPlot(samplesList, var = NULL, scale = FALSE,
+  legend = !is.null(names(samplesList)), legend.location = "topright",
+  cex = 1, densityplot = FALSE, file = NULL)
 }
 \arguments{
 \item{samplesList}{List of arrays of MCMC samples from different chains}
 
 \item{var}{Parameter names to plot}
 
-\item{nrows}{Number of rows in the resulting plot}
-
 \item{scale}{Logical, whether to normalize each posterior chain}
-
-\item{width}{Width of figure}
-
-\item{height}{Height of figure}
 
 \item{legend}{Logical, whether to include a legend of chain names}
 
 \item{legend.location}{Legend location}
 
-\item{jitter}{Scale factor for spreading out lines from each chain}
-
-\item{buffer.right}{Additional buffer on left side of plot}
-
-\item{buffer.left}{Additional buffer on right side of plot}
-
 \item{cex}{Expansion coefficient for text}
+
+\item{densityplot}{Logical, whether to generate posterior density plots instead of trace plots}
 
 \item{file}{Filename for saving figure to a file}
 }
 \description{
-Parameter plots from each chain show median and 95% credible intervals
+Overlays trace plots from each MCMC chain, for each parameter
 }
 \examples{
 samples1 <- cbind(rnorm(1000, 1), rgamma(1000, 1), rpois(1000, 1))
@@ -45,6 +34,6 @@ colnames(samples1) <- c('alpha', 'beta', 'gamma')
 samples2 <- cbind(rnorm(1000, 2), rgamma(1000, 2), rpois(1000, 2))
 colnames(samples2) <- c('alpha', 'beta', 'gamma')
 samplesList <- list(chain1 = samples1, chain2 = samples2)
-chainsPlot(samplesList, nrow = 1, jitter = .3, buffer.left = .5, buffer.right = .5)
+chainsPlot(samplesList)
 
 }

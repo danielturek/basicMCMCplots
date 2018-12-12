@@ -177,7 +177,7 @@ chainsSummary <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=
 #' samples2 <- cbind(rnorm(1000, 2), rgamma(1000, 2), rpois(1000, 2))
 #' colnames(samples2) <- c('alpha', 'beta', 'gamma')
 #' samplesList <- list(chain1 = samples1, chain2 = samples2)
-#' chainsPlot(samplesList, nrow = 1, jitter = .3, buffer.left = .5, buffer.right = .5)
+#' chainsPlot(samplesList)
 #'
 #' @export
 chainsPlot <- function(samplesList, var=NULL, scale=FALSE, legend=!is.null(names(samplesList)), legend.location='topright', cex=1, densityplot=FALSE, file=NULL) {

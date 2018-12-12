@@ -1,6 +1,6 @@
 Package: basicMCMCplots
 Title: Trace Plots, Density Plots and Chain Comparisons for MCMC Samples
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: person("Daniel", "Turek", email = "danielturek@gmail.com", role = c("aut", "cre"))
 Description: Provides a function for examining posterior MCMC samples
     from a single chain using trace plots and density plots, and from

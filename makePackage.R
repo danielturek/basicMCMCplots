@@ -12,6 +12,9 @@ library(roxygen2)
 setwd('~/github/basicMCMCplots/basicMCMCplots')
 document()
 
+## check current NAMESPACE file (since it doesn't get auto-generated)
+cat(paste0(readLines('NAMESPACE'), collapse='\n'))
+
 ## build the package tarball file
 setwd('~/github/basicMCMCplots')
 system('R CMD BUILD basicMCMCplots')

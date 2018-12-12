@@ -148,7 +148,7 @@ chainsSummary <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=
             points(x=xsJittered[ps], y=summary[iChain,'mean',ps], pch=16, col=cols[iChain])
             segments(x0=xsJittered[ps], y0=summary[iChain,'low',ps], y1=summary[iChain,'upp',ps], lwd=1, col=cols[iChain])
         }
-        if(legend) legend(legend.location, legend=names(samplesList), pch=16, col=cols, cex=cex)
+        if(legend & !is.null(names(samplesList))) legend(legend.location, legend=names(samplesList), pch=16, col=cols, cex=cex)
     }
     invisible(par(par.save))
     if(!is.null(file)) dev.off()
@@ -168,6 +168,7 @@ chainsSummary <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=
 #' @param legend Logical, whether to include a legend of chain names
 #' @param legend.location Legend location
 #' @param cex Expansion coefficient for text
+#' @param densityplot Logical, whether to generate posterior density plots instead of trace plots
 #' @param file Filename for saving figure to a file
 #'
 #' @examples
@@ -179,7 +180,7 @@ chainsSummary <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=
 #' chainsPlot(samplesList, nrow = 1, jitter = .3, buffer.left = .5, buffer.right = .5)
 #'
 #' @export
-chainsPlot <- function(samplesList, var=NULL, scale=FALSE, legend=!is.null(names(samplesList)), legend.location='topright', cex=1, file=NULL) {
+chainsPlot <- function(samplesList, var=NULL, scale=FALSE, legend=!is.null(names(samplesList)), legend.location='topright', cex=1, densityplot=FALSE, file=NULL) {
     if(!(class(samplesList) %in% c('list', 'mcmc.list'))) samplesList <- list(samplesList)
     if(!is.null(var)) samplesList <- lapply(samplesList, function(samples) {
         var <- gsub('\\[', '\\\\\\[', gsub('\\]', '\\\\\\]', var))   ## add \\ before any '[' or ']' appearing in var
@@ -190,36 +191,47 @@ chainsPlot <- function(samplesList, var=NULL, scale=FALSE, legend=!is.null(names
     })
     chainParamNamesList <- lapply(samplesList, function(s) colnames(s))
     nChains <- length(samplesList)
-    cols <- rainbow(nChains)
     paramNamesAll <- unique(unlist(lapply(samplesList, function(s) colnames(s))))
     nParamsAll <- length(paramNamesAll)
     nrows <- ceiling(nParamsAll / 3)
     ncols <- min(nParamsAll, 3)
-    height <- if(nrows==1) 3 else if(nrows==2) 4 else if(nrows==3) 5 else if(nrows==4) 6 else 7
+    height <- if(nrows==1) 3 else if(nrows==2) 4 else if(nrows==3) 5 else if(nrows==4) 6 else 6.5
     width <- 7
     if(!is.null(file)) pdf(file, width=width, height=height) else
     ## orig: if(inherits(try(knitr::opts_chunk$get('dev'), silent=TRUE), 'try-error') || is.null(knitr::opts_chunk$get('dev')))   ## if called from Rmarkdown/knitr
     if(inherits(try(eval(parse(text='knitr::opts_chunk$get(\'dev\')')[[1]]), silent=TRUE), 'try-error') || is.null(eval(parse(text='knitr::opts_chunk$get(\'dev\')')[[1]])))
         dev.new(width=width, height=height)
     par.save <- par(no.readonly = TRUE)
-    oma1 <- if(nrows==5) 2.5 else if(nrows==6) 2.5 else nrows/3
-    par(mfrow=c(nrows,ncols), mai=c(0.1,0.2,0.2,0.2), oma=c(oma1,.3,0,0), mgp=c(2,0.3,0))##, mar=c(mar1,1,0,1), oma=c(1,.1,.1,.1), mgp=c(3,0.5,0)   want these ???
+    oma1 <- if(nrows==1) 0.4 else if(nrows==2) 0.4 else 0.5
+    mai1 <- if(!densityplot) 0.1 else 0.2
+    par(mfrow=c(nrows,ncols), mai=c(mai1,0.2,0.2,0.2), oma=c(oma1,.3,0,0), mgp=c(2,0.3,0))
     for(iParam in 1:nParamsAll) {
         thisParamName <- paramNamesAll[iParam]
-        ylim <- range(unlist(lapply(samplesList, function(s) if(thisParamName %in% colnames(s)) s[,thisParamName] else NULL)))
-        createdNewPlot <- FALSE
-        for(iChain in 1:nChains) {
-            if(!(thisParamName %in% colnames(samplesList[[iChain]]))) next
-            if(!createdNewPlot) {
+        if(!densityplot) {  ## traceplots
+            cols <- rainbow(nChains)
+            xlim <- c(1, max(unlist(lapply(samplesList, function(s) if(thisParamName %in% colnames(s)) dim(s)[1] else NULL))))
+            ylim <- range(unlist(lapply(samplesList, function(s) if(thisParamName %in% colnames(s)) s[,thisParamName] else NULL)))
+            plot(-1, -1, xlim=xlim, ylim=ylim, xlab='', ylab='', main=thisParamName, cex.main=cex, cex.axis=0.8*cex, tcl=-0.2, xaxt='n')
+            if(iParam==1 & legend & !is.null(names(samplesList))) legend(legend.location, legend=names(samplesList), lty=1, col=cols, cex=cex)
+            for(iChain in 1:nChains) {
+                if(!(thisParamName %in% colnames(samplesList[[iChain]]))) next
                 ys <- samplesList[[iChain]][,thisParamName]
-                plot(seq_along(ys), ys, type='l', col=cols[iChain], ylim=ylim, xlab='', ylab='', main=thisParamName, cex.main=cex, cex.axis=0.8*cex, tcl=-0.2, xaxt='n')
-                if(iParam == 1) if(legend) legend(legend.location, legend=names(samplesList), lty=1, col=cols, cex=cex)
-                createdNewPlot <- TRUE
-            } else {
+                lines(seq_along(ys), ys, col=cols[iChain]) }
+        }  ## end trace plots
+        if(densityplot) {  ## density plots
+            xMin <- xMax <- yMax <- NULL
+            for(iChain in 1:nChains) {
+                if(!(thisParamName %in% colnames(samplesList[[iChain]]))) next
+                d <- density(samplesList[[iChain]][,thisParamName])
+                xMin <- min(xMin,d$x); xMax <- max(xMax,d$x); yMax <- max(yMax, d$y) }
+            plot(-1, -1, xlim=c(xMin,xMax), ylim=c(0,yMax), type='n', main=thisParamName, xlab='', ylab='', tcl=-0.2, yaxt='n', cex.main=cex, cex.axis=0.8*cex)
+            if(iParam==1 & legend & !is.null(names(samplesList))) legend(legend.location, legend=names(samplesList), fill=rainbow(nChains, alpha=0.5), bty='n', cex=cex)
+            for(iChain in 1:nChains) {
+                if(!(thisParamName %in% colnames(samplesList[[iChain]]))) next
                 ys <- samplesList[[iChain]][,thisParamName]
-                lines(seq_along(ys), ys, col=cols[iChain])
+                polygon(density(ys), col=rainbow(nChains, alpha=0.2)[iChain], border=rainbow(nChains, alpha=0.2)[iChain])
             }
-        }
+        }  ## end density plots
     }
     invisible(par(par.save))
     if(!is.null(file)) dev.off()

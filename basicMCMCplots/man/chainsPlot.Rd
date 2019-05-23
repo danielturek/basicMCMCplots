@@ -4,24 +4,28 @@
 \alias{chainsPlot}
 \title{Compare trace plots from multiple MCMC chains}
 \usage{
-chainsPlot(samplesList, var = NULL, scale = FALSE,
+chainsPlot(samplesList, var = NULL, burnin = 0, scale = FALSE,
   legend = !is.null(names(samplesList)), legend.location = "topright",
-  cex = 1, densityplot = FALSE, file = NULL)
+  cex = 1, traceplot = TRUE, densityplot = TRUE, file = NULL)
 }
 \arguments{
 \item{samplesList}{List of arrays of MCMC samples from different chains}
 
 \item{var}{Parameter names to plot}
 
-\item{scale}{Logical, whether to normalize each posterior chain}
+\item{burnin}{Number of initial samples to discard from each MCMC chain (default: 0)}
+
+\item{scale}{Logical, whether to normalize each posterior chain (default: FALSE)}
 
 \item{legend}{Logical, whether to include a legend of chain names}
 
 \item{legend.location}{Legend location}
 
-\item{cex}{Expansion coefficient for text}
+\item{cex}{Expansion coefficient for text (default: 1)}
 
-\item{densityplot}{Logical, whether to generate posterior density plots instead of trace plots}
+\item{traceplot}{Logical, whether to generate posterior trace plots (default: TRUE)}
+
+\item{densityplot}{Logical, whether to generate posterior density plots (default: TRUE)}
 
 \item{file}{Filename for saving figure to a file}
 }
@@ -34,6 +38,11 @@ colnames(samples1) <- c('alpha', 'beta', 'gamma')
 samples2 <- cbind(rnorm(1000, 2), rgamma(1000, 2), rpois(1000, 2))
 colnames(samples2) <- c('alpha', 'beta', 'gamma')
 samplesList <- list(chain1 = samples1, chain2 = samples2)
+
 chainsPlot(samplesList)
+
+chainsPlot(samplesList, densityplot = FALSE, burnin = 500)
+
+chainsPlot(samplesList, traceplot = FALSE, legend.location = 'topleft', cex = 0.7)
 
 }

@@ -1,17 +1,46 @@
 
+
+#### useful testing code !!!!
+##library(basicMCMCplots)
+## 
+##nchains <- 2
+##nparams <- 2
+##nsamples <- 1000
+##samplesList <- vector('list', nchains)
+##for(i in 1:nchains) {
+##    samples <- array(NA, c(nsamples, nparams))
+##    colnames(samples) <- letters[1:nparams]
+##    for(j in 1:nparams) {
+##        samples[,j] <- rnorm(nsamples, j/10, j/10)
+##    }
+##    samplesList[[i]] <- samples
+##}
+##names(samplesList) <- paste0('chain', 1:nchains)
+##str(samplesList)
+## 
+##samplesPlot(samplesList)
+## 
+##chainsPlot(samplesList, cex = 0.7)
+##chainsPlot(samplesList, traceplot = FALSE, cex = 0.7)
+##chainsPlot(samplesList, densityplot = FALSE, cex = 0.7)
+## 
+##chainsSummary(samplesList, jitter = .1, buffer.left = 0.3, buffer.right = 0.3)
+
+
+
 #' Plot MCMC traceplots and density plots
 #'
 #' @param samples Array of MCMC samples, or a list of samples from multiple chains in which case the first chain is used
 #' @param var Parameter names to plot
-#' @param ind Chain indices to plot
-#' @param burnin Nunber of initial MCMC samples to discard
+#' @param ind Indices of MCMC samples to plot
+#' @param burnin Number of initial MCMC samples to discard (default: 0)
 #' @param scale Logical, whether to normalize each posterior chain
 #' @param width Width of the plot
 #' @param height Height of the plot
 #' @param legend Logical, whether to include a legend of parameter names
 #' @param legend.location Location of legend
-#' @param traceplot Logical, whether to include traceplots
-#' @param densityplot Logaical, whether to include density plots
+#' @param traceplot Logical, whether to include traceplots (default: TRUE)
+#' @param densityplot Logaical, whether to include density plots (default: TRUE)
 #' @param file Optional filename to save figure as a file
 #'
 #' @examples
@@ -164,11 +193,13 @@ chainsSummary <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=
 #'
 #' @param samplesList List of arrays of MCMC samples from different chains
 #' @param var Parameter names to plot
-#' @param scale Logical, whether to normalize each posterior chain
+#' @param burnin Number of initial samples to discard from each MCMC chain (default: 0)
+#' @param scale Logical, whether to normalize each posterior chain (default: FALSE)
 #' @param legend Logical, whether to include a legend of chain names
 #' @param legend.location Legend location
-#' @param cex Expansion coefficient for text
-#' @param densityplot Logical, whether to generate posterior density plots instead of trace plots
+#' @param cex Expansion coefficient for text (default: 1)
+#' @param traceplot Logical, whether to generate posterior trace plots (default: TRUE)
+#' @param densityplot Logical, whether to generate posterior density plots (default: TRUE)
 #' @param file Filename for saving figure to a file
 #'
 #' @examples
@@ -177,10 +208,15 @@ chainsSummary <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=
 #' samples2 <- cbind(rnorm(1000, 2), rgamma(1000, 2), rpois(1000, 2))
 #' colnames(samples2) <- c('alpha', 'beta', 'gamma')
 #' samplesList <- list(chain1 = samples1, chain2 = samples2)
+#' 
 #' chainsPlot(samplesList)
+#' 
+#' chainsPlot(samplesList, densityplot = FALSE, burnin = 500)
+#'
+#' chainsPlot(samplesList, traceplot = FALSE, legend.location = 'topleft', cex = 0.7)
 #'
 #' @export
-chainsPlot <- function(samplesList, var=NULL, scale=FALSE, legend=!is.null(names(samplesList)), legend.location='topright', cex=1, densityplot=FALSE, file=NULL) {
+chainsPlot <- function(samplesList, var=NULL, burnin=0, scale=FALSE, legend=!is.null(names(samplesList)), legend.location='topright', cex=1, traceplot=TRUE, densityplot=TRUE, file=NULL) {
     if(!(class(samplesList) %in% c('list', 'mcmc.list'))) samplesList <- list(samplesList)
     if(!is.null(var)) samplesList <- lapply(samplesList, function(samples) {
         var <- gsub('\\[', '\\\\\\[', gsub('\\]', '\\\\\\]', var))   ## add \\ before any '[' or ']' appearing in var
@@ -193,8 +229,11 @@ chainsPlot <- function(samplesList, var=NULL, scale=FALSE, legend=!is.null(names
     nChains <- length(samplesList)
     paramNamesAll <- unique(unlist(lapply(samplesList, function(s) colnames(s))))
     nParamsAll <- length(paramNamesAll)
-    nrows <- ceiling(nParamsAll / 3)
-    ncols <- min(nParamsAll, 3)
+    samplesList <- lapply(samplesList, function(samples) samples[(burnin+1) : nrow(samples), ] )
+    if(!traceplot && !densityplot) stop('must specify either traceplot = TRUE, or densityplot = TRUE, or both')
+    if(traceplot + densityplot == 1) {
+        nrows <- ceiling(nParamsAll / 3);   ncols <- min(nParamsAll, 3)  } else {  ## traceplots or densityplots (but not both)
+        nrows <- nParamsAll;                ncols <- 2                   }         ## both traceplots and densityplots
     height <- if(nrows==1) 3 else if(nrows==2) 4 else if(nrows==3) 5 else if(nrows==4) 6 else 6.5
     width <- 7
     if(!is.null(file)) pdf(file, width=width, height=height) else
@@ -203,15 +242,15 @@ chainsPlot <- function(samplesList, var=NULL, scale=FALSE, legend=!is.null(names
         dev.new(width=width, height=height)
     par.save <- par(no.readonly = TRUE)
     oma1 <- if(nrows==1) 0.4 else if(nrows==2) 0.4 else 0.5
-    mai1 <- if(!densityplot) 0.1 else 0.2
+    mai1 <- if(traceplot & !densityplot) 0.1 else 0.2
     par(mfrow=c(nrows,ncols), mai=c(mai1,0.2,0.2,0.2), oma=c(oma1,.3,0,0), mgp=c(2,0.3,0))
     for(iParam in 1:nParamsAll) {
         thisParamName <- paramNamesAll[iParam]
-        if(!densityplot) {  ## traceplots
+        if(traceplot) {  ## trace plots
             cols <- rainbow(nChains)
             xlim <- c(1, max(unlist(lapply(samplesList, function(s) if(thisParamName %in% colnames(s)) dim(s)[1] else NULL))))
             ylim <- range(unlist(lapply(samplesList, function(s) if(thisParamName %in% colnames(s)) s[,thisParamName] else NULL)))
-            plot(-1, -1, xlim=xlim, ylim=ylim, xlab='', ylab='', main=thisParamName, cex.main=cex, cex.axis=0.8*cex, tcl=-0.2, xaxt='n')
+            plot(-1000, -1, xlim=xlim, ylim=ylim, xlab='', ylab='', main=thisParamName, cex.main=cex, cex.axis=0.8*cex, tcl=-0.2, xaxt='n')
             if(iParam==1 & legend & !is.null(names(samplesList))) legend(legend.location, legend=names(samplesList), lty=1, col=cols, cex=cex)
             for(iChain in 1:nChains) {
                 if(!(thisParamName %in% colnames(samplesList[[iChain]]))) next
@@ -224,7 +263,7 @@ chainsPlot <- function(samplesList, var=NULL, scale=FALSE, legend=!is.null(names
                 if(!(thisParamName %in% colnames(samplesList[[iChain]]))) next
                 d <- density(samplesList[[iChain]][,thisParamName])
                 xMin <- min(xMin,d$x); xMax <- max(xMax,d$x); yMax <- max(yMax, d$y) }
-            plot(-1, -1, xlim=c(xMin,xMax), ylim=c(0,yMax), type='n', main=thisParamName, xlab='', ylab='', tcl=-0.2, yaxt='n', cex.main=cex, cex.axis=0.8*cex)
+            plot(-1000, -1, xlim=c(xMin,xMax), ylim=c(0,yMax), type='n', main=thisParamName, xlab='', ylab='', tcl=-0.2, yaxt='n', cex.main=cex, cex.axis=0.8*cex)
             if(iParam==1 & legend & !is.null(names(samplesList))) legend(legend.location, legend=names(samplesList), fill=rainbow(nChains, alpha=0.5), bty='n', cex=cex)
             for(iChain in 1:nChains) {
                 if(!(thisParamName %in% colnames(samplesList[[iChain]]))) next
@@ -239,96 +278,5 @@ chainsPlot <- function(samplesList, var=NULL, scale=FALSE, legend=!is.null(names
 
 
 
-
-
-##### IN MCMC_utils.R
-#####
-#####samplesSummary <- function(samples) {
-#####    cbind(
-#####        `Mean`      = apply(samples, 2, mean),
-#####        `Median`    = apply(samples, 2, median),
-#####        `St.Dev.`   = apply(samples, 2, sd),
-#####        `95%CI_low` = apply(samples, 2, function(x) quantile(x, 0.025)),
-#####        `95%CI_upp` = apply(samples, 2, function(x) quantile(x, 0.975)))
-#####}
-
-
-## ## utility for plotting MCMC samples from multiple chains (one parameter only)
-## samplesPlot2 <- function(samplesList, ind=1, burnin=NULL, legend=TRUE, legend.location='topright') {
-## #  dev.new(height=height, width=width)
-##   nChains <- length(samplesList)
-##   par(mfrow=c(1,2), cex=0.7, cex.main=1.5, lab=c(3,3,7), mgp=c(0,0.6,0), mar=c(2,1,2,1), oma=c(0,0,0,0), tcl=-0.3, yaxt='n', bty='l')
-##   samples <- samplesList[[1]][, ind, drop=FALSE]
-##   if (nChains > 1)
-##     for (chain in 2:nChains)
-##       samples <- cbind(samples, samplesList[[chain]][, ind, drop=FALSE])
-##   if(!is.null(burnin))
-##     samples <- samples[(burnin+1):dim(samples)[1], , drop=FALSE]
-##   colnames(samples) <- paste("Chain", 1:nChains)
-##   nparam <- ncol(samples)
-##   rng <- range(samples)
-##   plot(1:nrow(samples), ylim=rng, type='n', main=paste('Traceplots', ind), xlab='', ylab='')
-##   for(i in 1:nparam)
-##     lines(samples[,i], col=rainbow(nparam, alpha=0.75)[i])
-##   xMin <- xMax <- yMax <- NULL
-##   for(i in 1:nparam) {
-##     d <- density(samples[,i])
-##     xMin <- min(xMin,d$x); xMax <- max(xMax,d$x); yMax <- max(yMax, d$y) }
-##   plot(1, xlim=c(xMin,xMax), ylim=c(0,yMax), type='n', main=paste('Posterior Densities', ind), xlab='', ylab='')
-##   alpha_density <- 0.2
-##   for(i in 1:nparam)
-##     polygon(density(samples[,i]), col=rainbow(nparam, alpha=alpha_density)[i], border=rainbow(nparam, alpha=alpha_density)[i])
-##   if(legend & !is.null(dimnames(samples)) & is.character(dimnames(samples)[[2]]))
-##     legend(legend=dimnames(samples)[[2]], fill=rainbow(nparam, alpha=0.5), bty='n', x=legend.location)
-## }
-
-## ## utility for plotting MCMC samples from multiple chains (also allows multiple parameters)
-## samplesPlot3 <- function(samplesList, ind=1, burnin=NULL, legend=TRUE, legend.location='topright', 
-##                          common.scale = TRUE, nCols = 2) {
-##   #  dev.new(height=height, width=width)
-##   nChains <- length(samplesList)
-##   nPar <- length(ind)
-##   if (common.scale && nPar > 1) {
-##     samplesAll <- samplesList[[1]][, ind, drop=FALSE]
-##     if (nChains > 1)
-##       for (chain in 2:nChains)
-##         samplesAll <- cbind(samplesAll, samplesList[[chain]][, ind, drop=FALSE])
-##     if(!is.null(burnin))
-##       samplesAll <- samplesAll[(burnin+1):dim(samplesAll)[1], , drop=FALSE]
-##     rng <- range(samplesAll)
-##     xMin <- xMax <- yMax <- NULL
-##     for(i in 1:ncol(samplesAll)) {
-##       d <- density(samplesAll[,i])
-##       xMin <- min(xMin,d$x); xMax <- max(xMax,d$x); yMax <- max(yMax, d$y) 
-##     }
-##   }
-##   nRows <- ceiling(nPar / nCols * 2)
-##   par(mfrow=c(nRows, nCols), cex=0.7, cex.main=1, lab=c(3,3,7), mgp=c(0,0.6,0), mar=c(2,1,2,1), oma=c(0,0,0,0), tcl=-0.3, yaxt='n', bty='l')
-##   for (par in ind) {
-##     samples <- samplesList[[1]][, par, drop=FALSE]
-##     if (nChains > 1)
-##       for (chain in 2:nChains)
-##         samples <- cbind(samples, samplesList[[chain]][, par, drop=FALSE])
-##     if(!is.null(burnin))
-##       samples <- samples[(burnin+1):dim(samples)[1], , drop=FALSE]
-##     colnames(samples) <- paste("Chain", 1:nChains)
-##     if (!common.scale || nPar == 1) {
-##       rng <- range(samples)
-##       xMin <- xMax <- yMax <- NULL
-##       for(i in 1:nChains) {
-##         d <- density(samples[,i])
-##         xMin <- min(xMin,d$x); xMax <- max(xMax,d$x); yMax <- max(yMax, d$y) }
-##     }
-##     plot(1:nrow(samples), ylim=rng, type='n', main=paste('Traceplots', par), xlab='', ylab='')
-##     for(i in 1:nChains)
-##       lines(samples[,i], col=rainbow(nChains, alpha=0.75)[i])
-##     plot(1, xlim=c(xMin,xMax), ylim=c(0,yMax), type='n', main=paste('Posterior Densities', par), xlab='', ylab='')
-##     alpha_density <- 0.2
-##     for(i in 1:nChains)
-##       polygon(density(samples[,i]), col=rainbow(nChains, alpha=alpha_density)[i], border=rainbow(nChains, alpha=alpha_density)[i])
-##     if(legend & !is.null(dimnames(samples)) & is.character(dimnames(samples)[[2]]))
-##       legend(legend=dimnames(samples)[[2]], fill=rainbow(nChains, alpha=0.5), bty='n', x=legend.location)
-##   }
-## }
 
 

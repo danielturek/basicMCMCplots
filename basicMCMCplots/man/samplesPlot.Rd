@@ -14,9 +14,9 @@ samplesPlot(samples, var = colnames(samples), ind = NULL,
 
 \item{var}{Parameter names to plot}
 
-\item{ind}{Chain indices to plot}
+\item{ind}{Indices of MCMC samples to plot}
 
-\item{burnin}{Nunber of initial MCMC samples to discard}
+\item{burnin}{Number of initial MCMC samples to discard (default: 0)}
 
 \item{scale}{Logical, whether to normalize each posterior chain}
 
@@ -28,9 +28,9 @@ samplesPlot(samples, var = colnames(samples), ind = NULL,
 
 \item{legend.location}{Location of legend}
 
-\item{traceplot}{Logical, whether to include traceplots}
+\item{traceplot}{Logical, whether to include traceplots (default: TRUE)}
 
-\item{densityplot}{Logaical, whether to include density plots}
+\item{densityplot}{Logaical, whether to include density plots (default: TRUE)}
 
 \item{file}{Optional filename to save figure as a file}
 }

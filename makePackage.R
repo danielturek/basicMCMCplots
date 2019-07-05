@@ -25,6 +25,8 @@ check('.')
 
 
 ## install the package from GitHub:
+remove.packages('basicMCMCplots')
+library(basicMCMCplots)
 library(devtools)
 install_github('danielturek/basicMCMCplots', subdir = 'basicMCMCplots')
 library(basicMCMCplots)

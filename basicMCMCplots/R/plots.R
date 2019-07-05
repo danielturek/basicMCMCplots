@@ -195,6 +195,9 @@ chainsSummary <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=
 #' @param var Parameter names to plot
 #' @param burnin Number of initial samples to discard from each MCMC chain (default: 0)
 #' @param scale Logical, whether to normalize each posterior chain (default: FALSE)
+#' @param ncols Number of columns in grid of parameter traceplots or densityplots
+#' @param width Width of the plot
+#' @param height Height of the plot
 #' @param legend Logical, whether to include a legend of chain names
 #' @param legend.location Legend location
 #' @param cex Expansion coefficient for text (default: 1)
@@ -216,7 +219,7 @@ chainsSummary <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=
 #' chainsPlot(samplesList, traceplot = FALSE, legend.location = 'topleft', cex = 0.7)
 #'
 #' @export
-chainsPlot <- function(samplesList, var=NULL, burnin=0, scale=FALSE, legend=!is.null(names(samplesList)), legend.location='topright', cex=1, traceplot=TRUE, densityplot=TRUE, file=NULL) {
+chainsPlot <- function(samplesList, var=NULL, burnin=0, scale=FALSE, ncols=NULL, width=7, height=NULL, legend=!is.null(names(samplesList)), legend.location='topright', cex=1, traceplot=TRUE, densityplot=TRUE, file=NULL) {
     if(!(class(samplesList) %in% c('list', 'mcmc.list'))) samplesList <- list(samplesList)
     if(!is.null(var)) samplesList <- lapply(samplesList, function(samples) {
         var <- gsub('\\[', '\\\\\\[', gsub('\\]', '\\\\\\]', var))   ## add \\ before any '[' or ']' appearing in var
@@ -232,10 +235,9 @@ chainsPlot <- function(samplesList, var=NULL, burnin=0, scale=FALSE, legend=!is.
     samplesList <- lapply(samplesList, function(samples) samples[(burnin+1) : nrow(samples), ] )
     if(!traceplot && !densityplot) stop('must specify either traceplot = TRUE, or densityplot = TRUE, or both')
     if(traceplot + densityplot == 1) {
-        nrows <- ceiling(nParamsAll / 3);   ncols <- min(nParamsAll, 3)  } else {  ## traceplots or densityplots (but not both)
-        nrows <- nParamsAll;                ncols <- 2                   }         ## both traceplots and densityplots
-    height <- if(nrows==1) 3 else if(nrows==2) 4 else if(nrows==3) 5 else if(nrows==4) 6 else 6.5
-    width <- 7
+        if(is.null(ncols)) ncols <- min(nParamsAll, 3);     nrows <- ceiling(nParamsAll / ncols)     } else {  ## traceplots or densityplots (but not both)
+        ncols <- 2;                                         nrows <- nParamsAll                      }         ## both traceplots and densityplots
+    if(is.null(height)) height <- if(nrows==1) 3 else if(nrows==2) 4 else if(nrows==3) 5 else if(nrows==4) 6 else 6.5
     if(!is.null(file)) pdf(file, width=width, height=height) else
     ## orig: if(inherits(try(knitr::opts_chunk$get('dev'), silent=TRUE), 'try-error') || is.null(knitr::opts_chunk$get('dev')))   ## if called from Rmarkdown/knitr
     if(inherits(try(eval(parse(text='knitr::opts_chunk$get(\'dev\')')[[1]]), silent=TRUE), 'try-error') || is.null(eval(parse(text='knitr::opts_chunk$get(\'dev\')')[[1]])))

@@ -5,6 +5,7 @@
 \title{Compare trace plots from multiple MCMC chains}
 \usage{
 chainsPlot(samplesList, var = NULL, burnin = 0, scale = FALSE,
+  ncols = NULL, width = 7, height = NULL,
   legend = !is.null(names(samplesList)), legend.location = "topright",
   cex = 1, traceplot = TRUE, densityplot = TRUE, file = NULL)
 }
@@ -16,6 +17,12 @@ chainsPlot(samplesList, var = NULL, burnin = 0, scale = FALSE,
 \item{burnin}{Number of initial samples to discard from each MCMC chain (default: 0)}
 
 \item{scale}{Logical, whether to normalize each posterior chain (default: FALSE)}
+
+\item{ncols}{Number of columns in grid of parameter traceplots or densityplots}
+
+\item{width}{Width of the plot}
+
+\item{height}{Height of the plot}
 
 \item{legend}{Logical, whether to include a legend of chain names}
 

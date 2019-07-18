@@ -24,10 +24,11 @@ setwd('~/github/basicMCMCplots/basicMCMCplots')
 check('.')
 
 ## install the newly build (local) 'basicMMCplots' package
+remove.packages('basicMCMCplots')
+## restart R here
 setwd('~/github/basicMCMCplots')
 (tarFiles <- grep('\\.tar\\.gz$', list.files(), value = TRUE))
 (lastTarFile <- tarFiles[length(tarFiles)])
-remove.packages('basicMCMCplots')
 library(basicMCMCplots)
 system(paste0('R CMD install ', lastTarFile))
 library(basicMCMCplots)

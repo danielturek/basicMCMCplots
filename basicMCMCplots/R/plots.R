@@ -193,6 +193,7 @@ chainsSummary <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=
 #'
 #' @param samplesList List of arrays of MCMC samples from different chains
 #' @param var Parameter names to plot
+#' @param ind Indices of MCMC samples to plot
 #' @param burnin Number of initial samples to discard from each MCMC chain (default: 0)
 #' @param scale Logical, whether to normalize each posterior chain (default: FALSE)
 #' @param ncols Number of columns in grid of parameter traceplots or densityplots
@@ -219,7 +220,7 @@ chainsSummary <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=
 #' chainsPlot(samplesList, traceplot = FALSE, legend.location = 'topleft', cex = 0.7)
 #'
 #' @export
-chainsPlot <- function(samplesList, var=NULL, burnin=0, scale=FALSE, ncols=NULL, width=7, height=NULL, legend=!is.null(names(samplesList)), legend.location='topright', cex=1, traceplot=TRUE, densityplot=TRUE, file=NULL) {
+chainsPlot <- function(samplesList, var=NULL, ind=NULL, burnin=NULL, scale=FALSE, ncols=NULL, width=7, height=NULL, legend=!is.null(names(samplesList)), legend.location='topright', cex=1, traceplot=TRUE, densityplot=TRUE, file=NULL) {
     if(!(class(samplesList) %in% c('list', 'mcmc.list'))) samplesList <- list(samplesList)
     if(!is.null(var)) samplesList <- lapply(samplesList, function(samples) {
         var <- gsub('\\[', '\\\\\\[', gsub('\\]', '\\\\\\]', var))   ## add \\ before any '[' or ']' appearing in var
@@ -232,7 +233,9 @@ chainsPlot <- function(samplesList, var=NULL, burnin=0, scale=FALSE, ncols=NULL,
     nChains <- length(samplesList)
     paramNamesAll <- unique(unlist(lapply(samplesList, function(s) colnames(s))))
     nParamsAll <- length(paramNamesAll)
-    samplesList <- lapply(samplesList, function(samples) samples[(burnin+1) : nrow(samples), , drop = FALSE])
+    if(!is.null(ind) && !is.null(burnin)) stop('only specify either ind or burnin')
+    if(!is.null(ind))    samplesList <- lapply(samplesList, function(samples) samples[ind, , drop=FALSE])
+    if(!is.null(burnin)) samplesList <- lapply(samplesList, function(samples) samples[(burnin+1):nrow(samples), , drop=FALSE])
     if(!traceplot && !densityplot) stop('must specify either traceplot = TRUE, or densityplot = TRUE, or both')
     if(traceplot + densityplot == 1) {
         if(is.null(ncols)) ncols <- min(nParamsAll, 3);     nrows <- ceiling(nParamsAll / ncols)     } else {  ## traceplots or densityplots (but not both)

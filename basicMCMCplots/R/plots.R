@@ -232,7 +232,7 @@ chainsPlot <- function(samplesList, var=NULL, burnin=0, scale=FALSE, ncols=NULL,
     nChains <- length(samplesList)
     paramNamesAll <- unique(unlist(lapply(samplesList, function(s) colnames(s))))
     nParamsAll <- length(paramNamesAll)
-    samplesList <- lapply(samplesList, function(samples) samples[(burnin+1) : nrow(samples), ] )
+    samplesList <- lapply(samplesList, function(samples) samples[(burnin+1) : nrow(samples), , drop = FALSE])
     if(!traceplot && !densityplot) stop('must specify either traceplot = TRUE, or densityplot = TRUE, or both')
     if(traceplot + densityplot == 1) {
         if(is.null(ncols)) ncols <- min(nParamsAll, 3);     nrows <- ceiling(nParamsAll / ncols)     } else {  ## traceplots or densityplots (but not both)

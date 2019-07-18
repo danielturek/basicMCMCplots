@@ -4,8 +4,8 @@
 \alias{chainsPlot}
 \title{Compare trace plots from multiple MCMC chains}
 \usage{
-chainsPlot(samplesList, var = NULL, burnin = 0, scale = FALSE,
-  ncols = NULL, width = 7, height = NULL,
+chainsPlot(samplesList, var = NULL, ind = NULL, burnin = NULL,
+  scale = FALSE, ncols = NULL, width = 7, height = NULL,
   legend = !is.null(names(samplesList)), legend.location = "topright",
   cex = 1, traceplot = TRUE, densityplot = TRUE, file = NULL)
 }
@@ -13,6 +13,8 @@ chainsPlot(samplesList, var = NULL, burnin = 0, scale = FALSE,
 \item{samplesList}{List of arrays of MCMC samples from different chains}
 
 \item{var}{Parameter names to plot}
+
+\item{ind}{Indices of MCMC samples to plot}
 
 \item{burnin}{Number of initial samples to discard from each MCMC chain (default: 0)}
 

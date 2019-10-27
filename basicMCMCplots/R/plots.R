@@ -58,6 +58,8 @@ samplesPlot <- function(samples, var=colnames(samples), ind=NULL, burnin=NULL, s
     par(mfrow=c(1,traceplot+densityplot), cex=0.7, cex.main=1.5, cex.axis=0.9, lab=c(3,3,7), mgp=c(0,0.4,0), mar=c(1.6,1.6,2,0.6), oma=c(0,0,0,0), tcl=-0.3, bty='l')
     ## process samples
     if(is.list(samples)) samples <- samples[[1]]    ## if samplesList was provided, then take first chain
+    if(is.numeric(samples)) { samples <- matrix(samples, ncol = 1)
+                              colnames(samples) <- 'var'; var <- 'var' }
     var <- gsub('\\[', '\\\\\\[', gsub('\\]', '\\\\\\]', var))   ## add \\ before any '[' or ']' appearing in var
     var <- unlist(lapply(var, function(n) grep(paste0('^', n,'(\\[.+\\])?$'), colnames(samples), value=TRUE)))  ## expanded any indexing
     samples <- samples[, var, drop=FALSE]
@@ -106,6 +108,7 @@ samplesPlot <- function(samples, var=colnames(samples), ind=NULL, burnin=NULL, s
 #' @param legend Logical, whether to include a legend of chain names
 #' @param legend.location Legend location
 #' @param jitter Scale factor for spreading out lines from each chain
+#' @param buffer Buffer margin on both sides. Overrides buffer.right and buffer.left
 #' @param buffer.right Additional buffer on left side of plot
 #' @param buffer.left Additional buffer on right side of plot
 #' @param cex Expansion coefficient for text
@@ -120,7 +123,7 @@ samplesPlot <- function(samples, var=colnames(samples), ind=NULL, burnin=NULL, s
 #' chainsSummary(samplesList, nrow = 1, jitter = .3, buffer.left = .5, buffer.right = .5)
 #'
 #' @export
-chainsSummary <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=7, height=NULL, legend=!is.null(names(samplesList)), legend.location='topright', jitter=1, buffer.right=0, buffer.left=0, cex=1, file=NULL) {
+chainsSummary <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=7, height=NULL, legend=!is.null(names(samplesList)), legend.location='topright', jitter, buffer=NULL, buffer.right=NULL, buffer.left=NULL, cex=1, file=NULL) {
     if(!(class(samplesList) %in% c('list', 'mcmc.list'))) samplesList <- list(samplesList)
     if(!is.null(var)) samplesList <- lapply(samplesList, function(samples) {
         var <- gsub('\\[', '\\\\\\[', gsub('\\]', '\\\\\\]', var))   ## add \\ before any '[' or ']' appearing in var
@@ -134,6 +137,7 @@ chainsSummary <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=
     cols <- rainbow(nChains)
     paramNamesAll <- unique(unlist(lapply(samplesList, function(s) colnames(s))))
     nParamsAll <- length(paramNamesAll)
+    if(!missing(buffer)) { buffer.right <- buffer.left <- buffer }
     if(is.null(nrows)) nrows <- min(ceiling(nParamsAll/7), 3)
     if(is.null(height)) height <- if(nrows==1) 3 else if(nrows==2) 4 else 7
     ## this section moved lower, after we know nrows:
@@ -142,7 +146,6 @@ chainsSummary <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=
     if(inherits(try(eval(parse(text='knitr::opts_chunk$get(\'dev\')')[[1]]), silent=TRUE), 'try-error') || is.null(eval(parse(text='knitr::opts_chunk$get(\'dev\')')[[1]])))
         dev.new(height=height, width=width)
     par.save <- par(no.readonly = TRUE)
-    ##par(mfrow=c(nrows,1), oma=c(3,1,1,1), mar=c(4,1,0,1), mgp=c(3,0.5,0))
     mar1 <- if(nrows<=2) 2 else 4
     par(mfrow=c(nrows,1), oma=c(3,1,1,1), mar=c(mar1,1,0,1), mgp=c(3,0.5,0))
     ## construct 3D summary array:
@@ -159,6 +162,10 @@ chainsSummary <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=
         summary[iChain,c('mean','low','upp'),colnames(thisSummary)] <- thisSummary
     }
     nParamsPerRow <- ceiling(nParamsAll/nrows)
+    if(!is.null(buffer)) { buffer.right <- buffer.left <- buffer }
+    if(is.null(buffer.right)) buffer.right <- 1 #3/nParamsPerRow
+    if(is.null(buffer.left))  buffer.left  <- 1/nParamsPerRow
+    if(missing(jitter)) jitter <- (nParamsPerRow-1)/6*.78 + .15
     sq <- if(nChains==1) 0 else seq(-1,1,length=nChains)
     scale <- width/nParamsPerRow * jitter * 0.1  ## adjust jitter scale factor at end
     for(iRow in 1:nrows) {

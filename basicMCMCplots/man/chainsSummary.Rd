@@ -6,8 +6,8 @@
 \usage{
 chainsSummary(samplesList, var = NULL, nrows = NULL, scale = FALSE,
   width = 7, height = NULL, legend = !is.null(names(samplesList)),
-  legend.location = "topright", jitter = 1, buffer.right = 0,
-  buffer.left = 0, cex = 1, file = NULL)
+  legend.location = "topright", jitter, buffer = NULL,
+  buffer.right = NULL, buffer.left = NULL, cex = 1, file = NULL)
 }
 \arguments{
 \item{samplesList}{List of arrays of MCMC samples from different chains}
@@ -27,6 +27,8 @@ chainsSummary(samplesList, var = NULL, nrows = NULL, scale = FALSE,
 \item{legend.location}{Legend location}
 
 \item{jitter}{Scale factor for spreading out lines from each chain}
+
+\item{buffer}{Buffer margin on both sides. Overrides buffer.right and buffer.left}
 
 \item{buffer.right}{Additional buffer on left side of plot}
 

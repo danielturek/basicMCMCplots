@@ -25,7 +25,9 @@ check('.')
 
 ## install the newly build (local) 'basicMMCplots' package
 remove.packages('basicMCMCplots')
+
 ## restart R here
+
 setwd('~/github/basicMCMCplots')
 (tarFiles <- grep('\\.tar\\.gz$', list.files(), value = TRUE))
 (lastTarFile <- tarFiles[length(tarFiles)])
@@ -34,11 +36,11 @@ system(paste0('R CMD install ', lastTarFile))
 library(basicMCMCplots)
 
 ## install the package from GitHub:
-remove.packages('basicMCMCplots')
-library(basicMCMCplots)
-library(devtools)
-install_github('danielturek/basicMCMCplots', subdir = 'basicMCMCplots')
-library(basicMCMCplots)
+##remove.packages('basicMCMCplots')
+##library(basicMCMCplots)
+##library(devtools)
+##install_github('danielturek/basicMCMCplots', subdir = 'basicMCMCplots')
+##library(basicMCMCplots)
 
 
 

@@ -1,0 +1,4 @@
+chainsPlot              Compare trace plots from multiple MCMC chains
+chainsSummary           Compare summary statistics from multiple MCMC
+                        chains
+samplesPlot             Plot MCMC traceplots and density plots

@@ -58,8 +58,8 @@ samplesPlot <- function(samples, var=colnames(samples), ind=NULL, burnin=NULL, s
     par(mfrow=c(1,traceplot+densityplot), cex=0.7, cex.main=1.5, cex.axis=0.9, lab=c(3,3,7), mgp=c(0,0.4,0), mar=c(1.6,1.6,2,0.6), oma=c(0,0,0,0), tcl=-0.3, bty='l')
     ## process samples
     if(is.list(samples)) samples <- samples[[1]]    ## if samplesList was provided, then take first chain
-    if('numeric' %in% class(samples)) { samples <- matrix(samples, ncol = 1)
-                                        colnames(samples) <- 'var'; var <- 'var' }
+    if(class(samples) == 'numeric') { samples <- matrix(samples, ncol = 1)
+                                      colnames(samples) <- 'var'; var <- 'var' }
     var <- gsub('\\[', '\\\\\\[', gsub('\\]', '\\\\\\]', var))   ## add \\ before any '[' or ']' appearing in var
     var <- unlist(lapply(var, function(n) grep(paste0('^', n,'(\\[.+\\])?$'), colnames(samples), value=TRUE)))  ## expanded any indexing
     samples <- samples[, var, drop=FALSE]
@@ -124,7 +124,7 @@ samplesPlot <- function(samples, var=colnames(samples), ind=NULL, burnin=NULL, s
 #'
 #' @export
 chainsSummary <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=7, height=NULL, legend=!is.null(names(samplesList)), legend.location='topright', jitter, buffer=NULL, buffer.right=NULL, buffer.left=NULL, cex=1, file=NULL) {
-    if(!(class(samplesList)[1] %in% c('list', 'mcmc.list'))) samplesList <- list(samplesList)
+    if(!(class(samplesList) %in% c('list', 'mcmc.list'))) samplesList <- list(samplesList)
     if(!is.null(var)) samplesList <- lapply(samplesList, function(samples) {
         var <- gsub('\\[', '\\\\\\[', gsub('\\]', '\\\\\\]', var))   ## add \\ before any '[' or ']' appearing in var
         theseVar <- unlist(lapply(var, function(n) grep(paste0('^', n,'(\\[.+\\])?$'), colnames(samples), value=TRUE)))  ## expanded any indexing
@@ -228,7 +228,7 @@ chainsSummary <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=
 #'
 #' @export
 chainsPlot <- function(samplesList, var=NULL, ind=NULL, burnin=NULL, scale=FALSE, ncols=NULL, width=7, height=NULL, legend=!is.null(names(samplesList)), legend.location='topright', cex=1, traceplot=TRUE, densityplot=TRUE, file=NULL) {
-    if(!(class(samplesList)[1] %in% c('list', 'mcmc.list'))) samplesList <- list(samplesList)
+    if(!(class(samplesList) %in% c('list', 'mcmc.list'))) samplesList <- list(samplesList)
     if(!is.null(var)) samplesList <- lapply(samplesList, function(samples) {
         var <- gsub('\\[', '\\\\\\[', gsub('\\]', '\\\\\\]', var))   ## add \\ before any '[' or ']' appearing in var
         theseVar <- unlist(lapply(var, function(n) grep(paste0('^', n,'(\\[.+\\])?$'), colnames(samples), value=TRUE)))  ## expanded any indexing

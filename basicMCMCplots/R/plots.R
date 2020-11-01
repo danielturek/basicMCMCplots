@@ -50,6 +50,7 @@
 #' 
 #' @export
 samplesPlot <- function(samples, var=colnames(samples), ind=NULL, burnin=NULL, scale=FALSE, width=7, height=4, legend=TRUE, legend.location='topright', traceplot=TRUE, densityplot=TRUE, file=NULL) {
+    if(!traceplot && !densityplot) return(invisible(NULL))
     if(!is.null(file)) pdf(file, width=width, height=height) else
     ## orig: if(inherits(try(knitr::opts_chunk$get('dev'), silent=TRUE), 'try-error') || is.null(knitr::opts_chunk$get('dev')))   ## if called from Rmarkdown/knitr
     if(inherits(try(eval(parse(text='knitr::opts_chunk$get(\'dev\')')[[1]]), silent=TRUE), 'try-error') || is.null(eval(parse(text='knitr::opts_chunk$get(\'dev\')')[[1]])))
@@ -228,6 +229,7 @@ chainsSummary <- function(samplesList, var=NULL, nrows=NULL, scale=FALSE, width=
 #'
 #' @export
 chainsPlot <- function(samplesList, var=NULL, ind=NULL, burnin=NULL, scale=FALSE, ncols=NULL, width=7, height=NULL, legend=!is.null(names(samplesList)), legend.location='topright', cex=1, traceplot=TRUE, densityplot=TRUE, file=NULL) {
+    if(!traceplot && !densityplot) return(invisible(NULL))
     if(!(class(samplesList)[1] %in% c('list', 'mcmc.list'))) samplesList <- list(samplesList)
     if(!is.null(var)) samplesList <- lapply(samplesList, function(samples) {
         var <- gsub('\\[', '\\\\\\[', gsub('\\]', '\\\\\\]', var))   ## add \\ before any '[' or ']' appearing in var
@@ -243,7 +245,6 @@ chainsPlot <- function(samplesList, var=NULL, ind=NULL, burnin=NULL, scale=FALSE
     if(!is.null(ind) && !is.null(burnin)) stop('only specify either ind or burnin')
     if(!is.null(ind))    samplesList <- lapply(samplesList, function(samples) samples[ind, , drop=FALSE])
     if(!is.null(burnin)) samplesList <- lapply(samplesList, function(samples) samples[(burnin+1):nrow(samples), , drop=FALSE])
-    if(!traceplot && !densityplot) stop('must specify either traceplot = TRUE, or densityplot = TRUE, or both')
     if(traceplot + densityplot == 1) {
         if(is.null(ncols)) ncols <- min(nParamsAll, 3);     nrows <- ceiling(nParamsAll / ncols)     } else {  ## traceplots or densityplots (but not both)
         ncols <- 2;                                         nrows <- nParamsAll                      }         ## both traceplots and densityplots

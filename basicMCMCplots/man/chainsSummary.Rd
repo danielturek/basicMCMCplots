@@ -4,10 +4,22 @@
 \alias{chainsSummary}
 \title{Compare summary statistics from multiple MCMC chains}
 \usage{
-chainsSummary(samplesList, var = NULL, nrows = NULL, scale = FALSE,
-  width = 7, height = NULL, legend = !is.null(names(samplesList)),
-  legend.location = "topright", jitter, buffer = NULL,
-  buffer.right = NULL, buffer.left = NULL, cex = 1, file = NULL)
+chainsSummary(
+  samplesList,
+  var = NULL,
+  nrows = NULL,
+  scale = FALSE,
+  width = 7,
+  height = NULL,
+  legend = !is.null(names(samplesList)),
+  legend.location = "topright",
+  jitter,
+  buffer = NULL,
+  buffer.right = NULL,
+  buffer.left = NULL,
+  cex = 1,
+  file = NULL
+)
 }
 \arguments{
 \item{samplesList}{List of arrays of MCMC samples from different chains}

@@ -4,10 +4,20 @@
 \alias{samplesPlot}
 \title{Plot MCMC traceplots and density plots}
 \usage{
-samplesPlot(samples, var = colnames(samples), ind = NULL,
-  burnin = NULL, scale = FALSE, width = 7, height = 4,
-  legend = TRUE, legend.location = "topright", traceplot = TRUE,
-  densityplot = TRUE, file = NULL)
+samplesPlot(
+  samples,
+  var = colnames(samples),
+  ind = NULL,
+  burnin = NULL,
+  scale = FALSE,
+  width = 7,
+  height = 4,
+  legend = TRUE,
+  legend.location = "topright",
+  traceplot = TRUE,
+  densityplot = TRUE,
+  file = NULL
+)
 }
 \arguments{
 \item{samples}{Array of MCMC samples, or a list of samples from multiple chains in which case the first chain is used}

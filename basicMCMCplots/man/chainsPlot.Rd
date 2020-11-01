@@ -4,10 +4,22 @@
 \alias{chainsPlot}
 \title{Compare trace plots from multiple MCMC chains}
 \usage{
-chainsPlot(samplesList, var = NULL, ind = NULL, burnin = NULL,
-  scale = FALSE, ncols = NULL, width = 7, height = NULL,
-  legend = !is.null(names(samplesList)), legend.location = "topright",
-  cex = 1, traceplot = TRUE, densityplot = TRUE, file = NULL)
+chainsPlot(
+  samplesList,
+  var = NULL,
+  ind = NULL,
+  burnin = NULL,
+  scale = FALSE,
+  ncols = NULL,
+  width = 7,
+  height = NULL,
+  legend = !is.null(names(samplesList)),
+  legend.location = "topright",
+  cex = 1,
+  traceplot = TRUE,
+  densityplot = TRUE,
+  file = NULL
+)
 }
 \arguments{
 \item{samplesList}{List of arrays of MCMC samples from different chains}

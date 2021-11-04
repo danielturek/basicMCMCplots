@@ -10,6 +10,7 @@ chainsPlot(
   ind = NULL,
   burnin = NULL,
   scale = FALSE,
+  line = NULL,
   ncols = NULL,
   width = 7,
   height = NULL,
@@ -31,6 +32,8 @@ chainsPlot(
 \item{burnin}{Number of initial samples to discard from each MCMC chain (default: 0)}
 
 \item{scale}{Logical, whether to normalize each posterior chain (default: FALSE)}
+
+\item{line}{Numeric vector of true parameter values for adding lines to plots}
 
 \item{ncols}{Number of columns in grid of parameter traceplots or densityplots}
 

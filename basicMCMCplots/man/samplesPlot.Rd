@@ -10,6 +10,7 @@ samplesPlot(
   ind = NULL,
   burnin = NULL,
   scale = FALSE,
+  line = NULL,
   width = 7,
   height = 4,
   legend = TRUE,
@@ -29,6 +30,8 @@ samplesPlot(
 \item{burnin}{Number of initial MCMC samples to discard (default: 0)}
 
 \item{scale}{Logical, whether to normalize each posterior chain}
+
+\item{line}{Numeric vector of true parameter values for adding lines to plots}
 
 \item{width}{Width of the plot}
 

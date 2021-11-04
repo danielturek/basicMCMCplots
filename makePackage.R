@@ -1,5 +1,3 @@
-
-
 library(devtools)
 library(roxygen2)
 
@@ -26,12 +24,12 @@ check('.')
 ## install the newly build (local) 'basicMMCplots' package
 remove.packages('basicMCMCplots')
 
-## restart R here
+q('no')  ## restart R here
 
 setwd('~/github/basicMCMCplots')
 (tarFiles <- grep('\\.tar\\.gz$', list.files(), value = TRUE))
 (lastTarFile <- tarFiles[length(tarFiles)])
-library(basicMCMCplots)
+library(basicMCMCplots)   ## ERROR
 system(paste0('R CMD install ', lastTarFile))
 library(basicMCMCplots)
 

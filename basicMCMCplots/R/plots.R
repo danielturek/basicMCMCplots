@@ -72,7 +72,7 @@ samplesPlot <- function(samples, var=colnames(samples), ind=NULL, burnin=NULL, s
     if(!is.null(burnin))  samples <- samples[(burnin+1):dim(samples)[1], , drop=FALSE]
     nparam <- ncol(samples)
     rng <- range(samples)
-    if(!is.null(line))    if(!is.numeric(line) | length(line) != nparam) stop(paste0('wrong length line argument, should be length ', nparam), call.=FALSE)
+    if(!is.null(line)) if(!is.numeric(line) | length(line) != nparam) stop(paste0('line argument must be numeric vector of length ', nparam), call.=FALSE)
     if(!traceplot & !densityplot) stop('both traceplot and densityplot are false')
     if(traceplot) {  ## traceplot
         plot(1:nrow(samples), ylim=rng, type='n', main='Traceplots', xlab='', ylab='')
@@ -247,7 +247,7 @@ chainsPlot <- function(samplesList, var=NULL, ind=NULL, burnin=NULL, scale=FALSE
     nChains <- length(samplesList)
     paramNamesAll <- unique(unlist(lapply(samplesList, function(s) colnames(s))))
     nParamsAll <- length(paramNamesAll)
-    if(!is.null(line))    if(!is.numeric(line) | length(line) != nParamsAll) stop(paste0('wrong length line argument, should be length ', nParamsAll), call.=FALSE)
+    if(!is.null(line)) if(!is.numeric(line) | length(line) != nParamsAll) stop(paste0('line argument must be numeric vector of length ', nParamsAll), call.=FALSE)
     if(!is.null(ind) && !is.null(burnin)) stop('only specify either ind or burnin')
     if(!is.null(ind))    samplesList <- lapply(samplesList, function(samples) samples[ind, , drop=FALSE])
     if(!is.null(burnin)) samplesList <- lapply(samplesList, function(samples) samples[(burnin+1):nrow(samples), , drop=FALSE])
